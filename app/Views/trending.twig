@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trending GIFs</title>
+</head>
+<body>
+
+<ul>
+    {% for gif in gifs %}
+        <li>
+            <img src="{{ gif['images']['original']['url'] }}" alt="{{ gif['title'] }}">
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="/">Back to Search</a>
+
+</body>
+</html>
