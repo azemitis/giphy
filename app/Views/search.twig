@@ -13,25 +13,26 @@
     <input type="submit" value="Search">
 </form>
 
-
-
 <br>
 
-{% if not trending_clicked %}
+{% if trending_clicked %}
     <a href="/trending"><b>Trending GIFs</b></a>
 {% endif %}
 
 {% if gifs is defined and gifs|length > 0 %}
-    <h2>GIFs Found:</h2>
-    <ul>
+    <h2>3 First GIFs Found:</h2>
+    <li>
         {% for gif in gifs %}
             <li>
                 <img src="{{ gif['images']['original']['url'] }}" alt="{{ gif['title'] }}">
             </li>
         {% endfor %}
-    </ul>
+    </li>
+{% else %}
+    <p>No GIFs found.</p>
 {% endif %}
-
+<br>
+<a href="/">Back to Main Search Page</a>
+<br>
 </body>
-
 </html>

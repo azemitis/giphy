@@ -2,28 +2,40 @@
 
 require_once 'vendor/autoload.php';
 
-use App\Controllers\GiphyController;
+//use App\Controllers\GiphyController;
 use Dotenv\Dotenv;
+use FastRoute\RouteCollector;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$apiClient = new GiphyController();
+$dispatcher = FastRoute\simpleDispatcher(function (RouteCollector $r) {
+    $r->addRoute('GET', '/', ['App\Controllers\GiphyController', 'home']);
+    $r->addRoute('GET', '/search/{searchTerm:.+}', ['App\Controllers\GiphyController', 'search']);
+    $r->addRoute('GET', '/trending', ['App\Controllers\GiphyController', 'trending']);
+});
 
-$searchTerm = $_GET['search'] ?? '';
+$httpMethod = $_SERVER['REQUEST_METHOD'];
+$uri = $_SERVER['REQUEST_URI'];
+$routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 
-$gifs = $apiClient->handleSearch($searchTerm);
+switch ($routeInfo[0]) {
+    case FastRoute\Dispatcher::NOT_FOUND:
+        http_response_code(404);
+        echo 'rabbit';
+        break;
+    case FastRoute\Dispatcher::FOUND:
+        $handler = $routeInfo[1];
+        $vars = $routeInfo[2];
 
-$loader = new FilesystemLoader('App/Views');
-$twig = new Environment($loader);
+        [$class, $method] = $handler;
 
-echo $twig->render('index.twig', ['gifs' => $gifs]);
+        $apiClient = new $class();
+        $loader = new FilesystemLoader('App/Views');
+        $twig = new Environment($loader);
 
-if ($_SERVER['REQUEST_URI'] === '/trending') {
-    $gifs = $apiClient->handleTrending();
-
-    echo $twig->render('trending.twig', ['gifs' => $gifs]);
-    exit;
+        echo $apiClient->$method($vars, $twig);
+        break;
 }

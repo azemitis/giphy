@@ -5,15 +5,18 @@
 </head>
 <body>
 
+<h1>3 Trending Gifs</h1>
+
 <ul>
     {% for gif in gifs %}
-        <li>
+        <ul>
+
             <img src="{{ gif['images']['original']['url'] }}" alt="{{ gif['title'] }}">
-        </li>
+        </ul>
     {% endfor %}
 </ul>
 
-<a href="/">Back to Search</a>
+<a href="/">Back to Main Search Page</a>
 
 </body>
 </html>

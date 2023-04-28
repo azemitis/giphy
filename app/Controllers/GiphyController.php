@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Giphy;
 use GuzzleHttp\Client;
+use Twig\Environment;
 
 class GiphyController
 {
@@ -16,30 +17,65 @@ class GiphyController
         $this->client = new Client();
     }
 
-    public function handleSearch(?string $searchTerm): array
+    public function home(array $vars, Environment $twig): string
     {
-        $gifs = [];
+        $template = $twig->load('index.twig');
 
-        if ($searchTerm !== null) {
-            $gifs = $this->model->searchGifs($searchTerm);
-        }
-
-        return $gifs;
+        return $template->render([
+            'gifs' => [],
+            'trending_clicked' => false,
+        ]);
     }
 
-    public function handleTrending(): array
+    public function search(array $vars, Environment $twig): string
     {
-        $url = 'https://api.giphy.com/v1/gifs/trending';
+        $url = 'https://api.giphy.com/v1/gifs/search';
         $apiKey = $_ENV['API_KEY'];
+        $searchTerm = $vars['searchTerm'] ?? '';
         $query = [
             'api_key' => $apiKey,
-            'limit' => 10,
+            'q' => $searchTerm,
+            'limit' => 3,
+            'offset' => 0,
             'rating' => 'g',
+            'lang' => 'en',
         ];
 
         $response = $this->client->request('GET', $url, ['query' => $query]);
         $data = json_decode($response->getBody()->getContents(), true);
 
-        return $data['data'];
+        $gifs = $data['data'];
+
+        $template = $twig->load('search.twig');
+
+        return $template->render([
+            'gifs' => $gifs,
+            'trending_clicked' => false,
+            'search_term' => $searchTerm,
+        ]);
+    }
+
+
+
+    public function trending(array $vars, Environment $twig): string
+    {
+        $url = 'https://api.giphy.com/v1/gifs/trending';
+        $apiKey = $_ENV['API_KEY'];
+        $query = [
+            'api_key' => $apiKey,
+            'limit' => 3,
+            'rating' => 'g',
+        ];
+
+        $response = $this->client->request('GET', $url, ['query' => $query]);
+        $data = json_decode($response->getBody()->getContents(), true);
+        $gifs = $data['data'];
+
+        $template = $twig->load('trending.twig');
+
+        return $template->render([
+            'gifs' => $gifs,
+            'trending_clicked' => true,
+        ]);
     }
 }
