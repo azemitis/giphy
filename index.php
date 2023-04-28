@@ -2,11 +2,15 @@
 
 require_once 'vendor/autoload.php';
 
-//use App\Controllers\GiphyController;
+/**
+ * @var GiphyController $controller
+ */
+
 use Dotenv\Dotenv;
 use FastRoute\RouteCollector;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use App\Controllers\GiphyController;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -32,10 +36,10 @@ switch ($routeInfo[0]) {
 
         [$class, $method] = $handler;
 
-        $apiClient = new $class();
+        $controller = new $class();
         $loader = new FilesystemLoader('App/Views');
         $twig = new Environment($loader);
 
-        echo $apiClient->$method($vars, $twig);
+        echo $controller->$method($vars, $twig);
         break;
 }

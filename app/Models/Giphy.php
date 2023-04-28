@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use GuzzleHttp\Client;
-use FastRoute\RouteCollector;
 
 class Giphy
 {
@@ -14,16 +13,38 @@ class Giphy
         $this->client = new Client();
     }
 
-//    public function registerRoutes(RouteCollector $router): void
-//    {
-//        $router->get('/search/{searchTerm}', function (array $params) {
-//            $searchTerm = $params['searchTerm'];
-//            $gifs = $this->searchGifs($searchTerm);
-//
-//            $loader = new FilesystemLoader('App/Views');
-//            $twig = new Environment($loader);
-//
-//            echo $twig->render('index.twig', ['gifs' => $gifs]);
-//        });
-//    }
+    public function getSearchGifs(string $searchTerm): array
+    {
+        $url = 'https://api.giphy.com/v1/gifs/search';
+        $apiKey = $_ENV['API_KEY'];
+        $query = [
+            'api_key' => $apiKey,
+            'q' => $searchTerm,
+            'limit' => 3,
+            'offset' => 0,
+            'rating' => 'g',
+            'lang' => 'en',
+        ];
+
+        $response = $this->client->request('GET', $url, ['query' => $query]);
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        return $data['data'];
+    }
+
+    public function getTrendingGifs(): array
+    {
+        $url = 'https://api.giphy.com/v1/gifs/trending';
+        $apiKey = $_ENV['API_KEY'];
+        $query = [
+            'api_key' => $apiKey,
+            'limit' => 3,
+            'rating' => 'g',
+        ];
+
+        $response = $this->client->request('GET', $url, ['query' => $query]);
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        return $data['data'];
+    }
 }
